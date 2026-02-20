@@ -21,6 +21,56 @@ struct lldp_config *bridge_get_lldp_config(const struct iface *bridge) {
 	return iface_info_bridge(bridge)->lldp;
 }
 
+// Global per-interface security state.
+struct iface_security l2_iface_security[L2_MAX_IFACES];
+struct iface_mac_count l2_iface_mac_counts[L2_MAX_IFACES][RTE_MAX_LCORE];
+
+uint32_t iface_get_max_macs(uint16_t iface_id) {
+	if (iface_id >= L2_MAX_IFACES)
+		return 0;
+	return l2_iface_security[iface_id].max_macs;
+}
+
+bool iface_get_shutdown_on_violation(uint16_t iface_id) {
+	if (iface_id >= L2_MAX_IFACES)
+		return false;
+	return l2_iface_security[iface_id].shutdown_on_violation;
+}
+
+bool iface_is_shutdown(uint16_t iface_id) {
+	if (iface_id >= L2_MAX_IFACES)
+		return false;
+	return l2_iface_security[iface_id].is_shutdown;
+}
+
+void iface_shutdown_violation(uint16_t iface_id) {
+	if (iface_id >= L2_MAX_IFACES)
+		return;
+	l2_iface_security[iface_id].is_shutdown = true;
+}
+
+void iface_increment_mac_count(uint16_t iface_id, uint16_t lcore_id) {
+	if (iface_id >= L2_MAX_IFACES)
+		return;
+	l2_iface_mac_counts[iface_id][lcore_id].dynamic_macs++;
+}
+
+void iface_decrement_mac_count(uint16_t iface_id, uint16_t lcore_id) {
+	if (iface_id >= L2_MAX_IFACES)
+		return;
+	if (l2_iface_mac_counts[iface_id][lcore_id].dynamic_macs > 0)
+		l2_iface_mac_counts[iface_id][lcore_id].dynamic_macs--;
+}
+
+uint32_t iface_get_total_macs(uint16_t iface_id) {
+	uint32_t total = 0;
+	if (iface_id >= L2_MAX_IFACES)
+		return 0;
+	for (unsigned i = 0; i < RTE_MAX_LCORE; i++)
+		total += l2_iface_mac_counts[iface_id][i].dynamic_macs;
+	return total;
+}
+
 static int bridge_reconfig(
 	struct iface *iface,
 	uint64_t set_attrs,
@@ -80,6 +130,10 @@ static int bridge_detach_member(struct iface *bridge, struct iface *member) {
 			br->n_members--;
 			member->domain_id = GR_IFACE_ID_UNDEF;
 			member->mode = GR_IFACE_MODE_VRF;
+			if (member->id < L2_MAX_IFACES)
+				memset(&l2_iface_security[member->id],
+				       0,
+				       sizeof(l2_iface_security[0]));
 			fdb_purge_iface(member->id);
 			break;
 		}
@@ -93,6 +147,8 @@ static int bridge_fini(struct iface *iface) {
 
 	for (unsigned i = 0; i < bridge->n_members; i++) {
 		struct iface *member = bridge->members[i];
+		if (member->id < L2_MAX_IFACES)
+			memset(&l2_iface_security[member->id], 0, sizeof(l2_iface_security[0]));
 		member->vrf_id = vrf_default_get_or_create();
 		if (member->vrf_id != GR_VRF_ID_UNDEF)
 			vrf_incref(member->vrf_id);

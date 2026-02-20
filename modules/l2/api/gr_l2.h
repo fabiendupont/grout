@@ -540,3 +540,32 @@ struct gr_l2_lldp_neighbors_list_req {
 	uint16_t bridge_id;
 	uint16_t iface_id;
 };
+
+// Interface security /////////////////////////////////////////////////////////
+
+#define GR_L2_IFACE_SECURITY_SET REQUEST_TYPE(GR_L2_MODULE, 0x0030)
+
+struct gr_l2_iface_security_req {
+	uint16_t bridge_id;
+	uint16_t iface_id;
+	uint32_t max_macs;
+	uint8_t shutdown_on_violation;
+};
+
+#define GR_L2_IFACE_SECURITY_GET REQUEST_TYPE(GR_L2_MODULE, 0x0031)
+
+struct gr_l2_iface_security_status {
+	uint16_t bridge_id;
+	uint16_t iface_id;
+	uint32_t max_macs;
+	uint32_t current_macs;
+	uint8_t shutdown_on_violation;
+	uint8_t is_shutdown;
+};
+
+#define GR_L2_IFACE_SECURITY_REENABLE REQUEST_TYPE(GR_L2_MODULE, 0x0032)
+
+struct gr_l2_iface_security_reenable_req {
+	uint16_t bridge_id;
+	uint16_t iface_id;
+};

@@ -14,6 +14,7 @@
 #include <rte_udp.h>
 #include <rte_vxlan.h>
 
+#include <stdbool.h>
 #include <stdint.h>
 
 // Per-core FDB forwarding statistics, indexed by [bridge_slot][lcore_id].
@@ -59,6 +60,28 @@ bool storm_control_meter_packet(
 // packet into a priority queue based on 802.1p CoS or DSCP and
 // checks the queue's trTCM meter.
 bool qos_meter_packet(uint16_t iface_id, uint16_t lcore_id, uint8_t priority, uint32_t packet_len);
+
+// Per-interface port security configuration.
+struct iface_security {
+	uint32_t max_macs; // 0 = unlimited (default)
+	bool shutdown_on_violation;
+	bool is_shutdown;
+};
+
+struct iface_mac_count {
+	uint32_t dynamic_macs;
+};
+
+extern struct iface_security l2_iface_security[L2_MAX_IFACES];
+extern struct iface_mac_count l2_iface_mac_counts[L2_MAX_IFACES][RTE_MAX_LCORE];
+
+uint32_t iface_get_max_macs(uint16_t iface_id);
+bool iface_get_shutdown_on_violation(uint16_t iface_id);
+bool iface_is_shutdown(uint16_t iface_id);
+void iface_shutdown_violation(uint16_t iface_id);
+void iface_increment_mac_count(uint16_t iface_id, uint16_t lcore_id);
+void iface_decrement_mac_count(uint16_t iface_id, uint16_t lcore_id);
+uint32_t iface_get_total_macs(uint16_t iface_id);
 
 // Port mirroring: check if packets on iface_id should be mirrored.
 // Returns the destination port ID or GR_IFACE_ID_UNDEF if no mirroring.

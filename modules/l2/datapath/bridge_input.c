@@ -66,8 +66,25 @@ static uint16_t bridge_input_process(
 		br = iface_info_bridge(bridge);
 		stats = fdb_get_stats(bridge->id, lcore_id);
 
+		// Port security: check if interface is shutdown due to violation.
+		if (iface_is_shutdown(d->iface->id)) {
+			edge = BRIDGE_INVAL;
+			goto next;
+		}
+
 		if (rte_is_unicast_ether_addr(&eth->src_addr)
 		    && !(br->flags & GR_BRIDGE_F_NO_LEARN)) {
+			// Port security: check MAC limits before learning.
+			uint32_t max_macs = iface_get_max_macs(d->iface->id);
+			if (max_macs > 0) {
+				uint32_t cur = iface_get_total_macs(d->iface->id);
+				if (cur >= max_macs) {
+					if (iface_get_shutdown_on_violation(d->iface->id))
+						iface_shutdown_violation(d->iface->id);
+					edge = BRIDGE_INVAL;
+					goto next;
+				}
+			}
 			vtep = (d->iface->type == GR_IFACE_TYPE_VXLAN) ? d->vtep : 0;
 			fdb_learn(bridge->id, d->iface->id, &eth->src_addr, d->vlan_id, vtep);
 		}
