@@ -6,5 +6,6 @@ cli_src += files(
     'flood.c',
     'fdb.c',
     'l2_stats.c',
+    'mcast_snooping.c',
     'vxlan.c',
 )

@@ -6,7 +6,12 @@ src += files(
   'fdb.c',
   'flood.c',
   'l2_stats.c',
+  'mcast_snooping.c',
   'vxlan.c',
 )
 
 inc += include_directories('.')
+
+tests += [
+  { 'sources': files('mcast_snooping_test.c', 'mcast_snooping.c'), 'link_args': [] },
+]

@@ -35,12 +35,26 @@ static inline struct fdb_stats *fdb_get_stats(uint16_t bridge_id, unsigned lcore
 	return &l2_fdb_stats[bridge_id][lcore_id];
 }
 
+struct mcast_snooping;
+
 // Internal bridge info structure.
 GR_IFACE_INFO(GR_IFACE_TYPE_BRIDGE, iface_info_bridge, {
 	BASE(__gr_iface_info_bridge_base);
 
 	struct iface *members[GR_BRIDGE_MAX_MEMBERS];
+	struct mcast_snooping *mcast_snoop;
 });
+
+struct mcast_snooping *bridge_get_mcast_snooping(const struct iface *bridge);
+
+// Check if a multicast packet to dst_mac should be forwarded to iface_id.
+// Returns true if snooping is disabled, MDB has no entry (flood), or
+// iface_id is in the MDB entry's port list.
+bool mcast_should_forward(
+	const struct iface *bridge,
+	const struct rte_ether_addr *dst_mac,
+	uint16_t iface_id
+);
 
 // Lookup a FDB entry from a MAC address and VLAN
 const struct gr_fdb_entry *

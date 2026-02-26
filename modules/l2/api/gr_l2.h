@@ -226,3 +226,71 @@ struct gr_l2_fdb_stats {
 struct gr_l2_fdb_stats_reset_req {
 	uint16_t bridge_id;
 };
+
+// Multicast snooping (IGMP/MLD) //////////////////////////////////////////////
+
+#define GR_L2_MCAST_SNOOPING_SET REQUEST_TYPE(GR_L2_MODULE, 0x0050)
+
+struct gr_l2_mcast_snooping_req {
+	uint16_t bridge_id;
+	uint8_t igmp_enabled;
+	uint8_t mld_enabled;
+	uint16_t query_interval;
+	uint16_t max_response_time;
+	uint8_t querier_enabled;
+	uint32_t aging_time;
+};
+
+#define GR_L2_MCAST_SNOOPING_GET REQUEST_TYPE(GR_L2_MODULE, 0x0051)
+
+struct gr_l2_mcast_snooping_status {
+	uint16_t bridge_id;
+	uint8_t igmp_enabled;
+	uint8_t mld_enabled;
+	uint16_t query_interval;
+	uint16_t max_response_time;
+	uint8_t querier_enabled;
+	uint32_t aging_time;
+	uint32_t mdb_entries;
+};
+
+#define GR_L2_MDB_LIST REQUEST_TYPE(GR_L2_MODULE, 0x0052)
+
+struct gr_l2_mdb_entry {
+	uint16_t bridge_id;
+	struct rte_ether_addr group_mac;
+	union {
+		ip4_addr_t ip4;
+		struct rte_ipv6_addr ip6;
+	} group_ip;
+	uint8_t ip_version;
+	uint16_t n_ports;
+	uint16_t ports[32];
+	uint8_t is_static;
+	uint32_t age;
+};
+
+struct gr_l2_mdb_list_req {
+	uint16_t bridge_id;
+};
+
+#define GR_L2_MDB_ADD REQUEST_TYPE(GR_L2_MODULE, 0x0053)
+
+struct gr_l2_mdb_add_req {
+	uint16_t bridge_id;
+	struct rte_ether_addr group_mac;
+	union {
+		ip4_addr_t ip4;
+		struct rte_ipv6_addr ip6;
+	} group_ip;
+	uint8_t ip_version;
+	uint16_t iface_id;
+};
+
+#define GR_L2_MDB_DEL REQUEST_TYPE(GR_L2_MODULE, 0x0054)
+
+struct gr_l2_mdb_del_req {
+	uint16_t bridge_id;
+	struct rte_ether_addr group_mac;
+	uint16_t iface_id;
+};

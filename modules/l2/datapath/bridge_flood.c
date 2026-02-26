@@ -71,6 +71,11 @@ static uint16_t bridge_flood_process(
 
 		bridge = iface_info_bridge(br);
 
+		// For multicast, check MDB to restrict forwarding
+		struct rte_ether_hdr *eth = rte_pktmbuf_mtod(m, struct rte_ether_hdr *);
+		bool is_mcast = rte_is_multicast_ether_addr(&eth->dst_addr)
+			&& !rte_is_broadcast_ether_addr(&eth->dst_addr);
+
 		for (uint16_t j = 0; j < bridge->n_members; j++) {
 			member = bridge->members[j];
 
@@ -79,6 +84,10 @@ static uint16_t bridge_flood_process(
 
 			if (!(member->flags & GR_IFACE_F_UP))
 				continue; // Skip down interfaces
+
+			// Multicast snooping: only forward to subscribed ports
+			if (is_mcast && !mcast_should_forward(br, &eth->dst_addr, member->id))
+				continue;
 
 			clone = clone_packet(m, flood_count, member);
 			if (clone == NULL)
