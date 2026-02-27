@@ -76,8 +76,8 @@ custom_target(
 grcli_commands = [
   'address', 'affinity', 'conntrack', 'dnat44', 'events', 'fdb', 'flood',
   'graph', 'interface', 'logging', 'mcast-snooping', 'nexthop', 'ping',
-  'ping6', 'route', 'router-advert', 'snat44', 'stats', 'storm-control',
-  'trace',
+  'ping6', 'port-mirror', 'route', 'router-advert', 'snat44', 'stats',
+  'storm-control', 'trace',
   'traceroute', 'traceroute6', 'tunsrc',
 ]
 

@@ -7,6 +7,7 @@ src += files(
   'flood.c',
   'l2_stats.c',
   'mcast_snooping.c',
+  'port_mirror.c',
   'storm_control.c',
   'vxlan.c',
 )
@@ -15,6 +16,7 @@ inc += include_directories('.')
 
 tests += [
   { 'sources': files('mcast_snooping_test.c', 'mcast_snooping.c'), 'link_args': [] },
+  { 'sources': files('port_mirror_test.c', 'port_mirror.c'), 'link_args': [] },
   { 'sources': files('storm_control_test.c', 'storm_control.c'),
     'link_args': ['-Wl,--wrap=rte_rdtsc', '-Wl,--wrap=rte_meter_trtcm_profile_config',
                   '-Wl,--wrap=rte_meter_trtcm_config'],

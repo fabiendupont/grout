@@ -3,15 +3,12 @@
 
 #pragma once
 
-#include <gr_iface.h>
 #include <gr_l2_control.h>
 
 #include <rte_meter.h>
 
 #include <stdbool.h>
 #include <stdint.h>
-
-#define L2_MAX_IFACES GR_MAX_IFACES
 
 // Per-interface configuration.
 struct storm_control_config {

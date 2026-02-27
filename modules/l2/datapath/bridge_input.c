@@ -129,6 +129,28 @@ next:
 		}
 
 		rte_node_enqueue_x1(graph, node, edge, m);
+
+		// Port mirroring: clone to mirror destination if configured
+		if (edge == OUTPUT || edge == FLOOD || edge == INPUT) {
+			uint16_t src_iface_id = iface_mbuf_data(m)->iface ?
+				iface_mbuf_data(m)->iface->id :
+				0;
+			uint16_t mirror_dest = port_mirror_get_dest(
+				bridge->id, src_iface_id, GR_MIRROR_DIR_INGRESS
+			);
+			if (mirror_dest != GR_IFACE_ID_UNDEF) {
+				const struct iface *dest = iface_from_id(mirror_dest);
+				if (dest != NULL && (dest->flags & GR_IFACE_F_UP)) {
+					struct rte_mbuf *clone = gr_mbuf_copy(
+						m, UINT32_MAX, sizeof(struct mbuf_data)
+					);
+					if (clone != NULL) {
+						mbuf_data(clone)->iface = dest;
+						rte_node_enqueue_x1(graph, node, OUTPUT, clone);
+					}
+				}
+			}
+		}
 	}
 
 	return nb_objs;

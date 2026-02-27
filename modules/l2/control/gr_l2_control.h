@@ -26,6 +26,7 @@ struct fdb_stats {
 } __rte_cache_aligned;
 
 #define L2_MAX_BRIDGES 256
+#define L2_MAX_IFACES GR_MAX_IFACES
 
 extern struct fdb_stats l2_fdb_stats[L2_MAX_BRIDGES][RTE_MAX_LCORE];
 
@@ -51,6 +52,10 @@ bool storm_control_meter_packet(
 	uint8_t traffic_type,
 	uint32_t packet_len
 );
+
+// Port mirroring: check if packets on iface_id should be mirrored.
+// Returns the destination port ID or GR_IFACE_ID_UNDEF if no mirroring.
+uint16_t port_mirror_get_dest(uint16_t bridge_id, uint16_t iface_id, uint8_t direction);
 
 // Internal bridge info structure.
 GR_IFACE_INFO(GR_IFACE_TYPE_BRIDGE, iface_info_bridge, {

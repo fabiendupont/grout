@@ -346,3 +346,78 @@ struct gr_l2_storm_control_stats {
 	uint64_t unknown_uc_dropped;
 	uint64_t shutdown_events;
 };
+
+// Port mirroring /////////////////////////////////////////////////////////////
+
+enum gr_mirror_direction {
+	GR_MIRROR_DIR_INGRESS = (1 << 0),
+	GR_MIRROR_DIR_EGRESS = (1 << 1),
+	GR_MIRROR_DIR_BOTH = (GR_MIRROR_DIR_INGRESS | GR_MIRROR_DIR_EGRESS),
+};
+
+#define GR_L2_MIRROR_SESSION_SET REQUEST_TYPE(GR_L2_MODULE, 0x0080)
+
+struct gr_l2_mirror_session_req {
+	uint16_t bridge_id;
+	uint16_t session_id;
+	uint8_t enabled;
+	uint16_t num_sources;
+	uint16_t source_ports[16];
+	uint16_t dest_port;
+	uint8_t direction;
+	uint8_t is_rspan;
+	uint16_t rspan_vlan;
+};
+
+#define GR_L2_MIRROR_SESSION_GET REQUEST_TYPE(GR_L2_MODULE, 0x0081)
+
+struct gr_l2_mirror_session_get_req {
+	uint16_t bridge_id;
+	uint16_t session_id;
+};
+
+struct gr_l2_mirror_session_status {
+	uint16_t bridge_id;
+	uint16_t session_id;
+	uint8_t enabled;
+	uint16_t num_sources;
+	uint16_t source_ports[16];
+	uint16_t dest_port;
+	uint8_t direction;
+	uint8_t is_rspan;
+	uint16_t rspan_vlan;
+	uint64_t packets_mirrored;
+};
+
+#define GR_L2_MIRROR_SESSION_DEL REQUEST_TYPE(GR_L2_MODULE, 0x0082)
+
+struct gr_l2_mirror_session_del_req {
+	uint16_t bridge_id;
+	uint16_t session_id;
+};
+
+struct gr_l2_mirror_filter_req {
+	uint16_t bridge_id;
+	uint16_t session_id;
+	uint8_t enabled;
+	uint16_t num_vlans;
+	uint16_t vlans[64];
+	uint16_t ether_type;
+	struct rte_ether_addr src_mac;
+	struct rte_ether_addr dst_mac;
+	uint8_t src_mac_set;
+	uint8_t dst_mac_set;
+};
+
+#define GR_L2_MIRROR_FILTER_SET REQUEST_TYPE(GR_L2_MODULE, 0x0083)
+
+#define GR_L2_MIRROR_STATS_GET REQUEST_TYPE(GR_L2_MODULE, 0x0084)
+
+struct gr_l2_mirror_stats {
+	uint16_t bridge_id;
+	uint64_t packets_mirrored;
+	uint64_t packets_dropped;
+	uint64_t filter_matched;
+	uint64_t filter_rejected;
+	uint64_t clone_failed;
+};
