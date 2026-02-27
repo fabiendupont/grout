@@ -66,6 +66,12 @@ static uint16_t bridge_input_process(
 		br = iface_info_bridge(bridge);
 		stats = fdb_get_stats(bridge->id, lcore_id);
 
+		// STP: skip learning and forwarding on blocked ports.
+		if (br->stp != NULL && !stp_port_is_learning(bridge, d->iface->id)) {
+			edge = BRIDGE_INVAL;
+			goto next;
+		}
+
 		// Port security: check if interface is shutdown due to violation.
 		if (iface_is_shutdown(d->iface->id)) {
 			edge = BRIDGE_INVAL;
@@ -92,7 +98,10 @@ static uint16_t bridge_input_process(
 		if (rte_is_unicast_ether_addr(&eth->dst_addr)) {
 			fdb = fdb_lookup(bridge->id, &eth->dst_addr, d->vlan_id);
 			if (fdb == NULL) {
-				// Unknown unicast
+				if (br->flags & GR_BRIDGE_F_NO_UNKNOWN_UNICAST) {
+					edge = FLOOD_DISABLED;
+					goto next;
+				}
 				if (stats)
 					stats->miss++;
 				edge = FLOOD;
@@ -120,7 +129,19 @@ static uint16_t bridge_input_process(
 				edge = OUTPUT;
 			}
 		} else {
-			// Broadcast, multicast
+			// Broadcast or multicast
+			if (rte_is_broadcast_ether_addr(&eth->dst_addr)) {
+				if (br->flags & GR_BRIDGE_F_NO_BROADCAST) {
+					edge = FLOOD_DISABLED;
+					goto next;
+				}
+			} else {
+				// Unknown multicast
+				if (br->flags & GR_BRIDGE_F_NO_UNKNOWN_MULTICAST) {
+					edge = FLOOD_DISABLED;
+					goto next;
+				}
+			}
 			if (stats)
 				stats->flood++;
 			edge = FLOOD;

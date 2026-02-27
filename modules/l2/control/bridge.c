@@ -71,6 +71,31 @@ uint32_t iface_get_total_macs(uint16_t iface_id) {
 	return total;
 }
 
+struct stp_bridge *bridge_get_stp(const struct iface *bridge) {
+	if (bridge == NULL || bridge->type != GR_IFACE_TYPE_BRIDGE)
+		return NULL;
+	return iface_info_bridge(bridge)->stp;
+}
+
+// STP datapath helpers. Default to allowing when no STP is configured.
+bool stp_port_is_forwarding(const struct iface *bridge, uint16_t /*iface_id*/) {
+	if (bridge == NULL || bridge->type != GR_IFACE_TYPE_BRIDGE)
+		return true;
+	if (iface_info_bridge(bridge)->stp == NULL)
+		return true;
+	// Overridden when an STP implementation is loaded.
+	return true;
+}
+
+bool stp_port_is_learning(const struct iface *bridge, uint16_t /*iface_id*/) {
+	if (bridge == NULL || bridge->type != GR_IFACE_TYPE_BRIDGE)
+		return true;
+	if (iface_info_bridge(bridge)->stp == NULL)
+		return true;
+	// Overridden when an STP implementation is loaded.
+	return true;
+}
+
 static int bridge_reconfig(
 	struct iface *iface,
 	uint64_t set_attrs,

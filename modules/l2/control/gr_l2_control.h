@@ -14,6 +14,12 @@
 #include <rte_udp.h>
 #include <rte_vxlan.h>
 
+// Forward declarations for optional feature subsystems.
+struct stp_bridge;
+struct mcast_snooping;
+struct vlan_filtering;
+struct lldp_config;
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -92,16 +98,20 @@ GR_IFACE_INFO(GR_IFACE_TYPE_BRIDGE, iface_info_bridge, {
 	BASE(__gr_iface_info_bridge_base);
 
 	struct iface *members[GR_BRIDGE_MAX_MEMBERS];
+	struct stp_bridge *stp;
 	struct mcast_snooping *mcast_snoop;
 	struct lldp_config *lldp;
 });
 
+struct stp_bridge *bridge_get_stp(const struct iface *bridge);
 struct mcast_snooping *bridge_get_mcast_snooping(const struct iface *bridge);
 struct lldp_config *bridge_get_lldp_config(const struct iface *bridge);
 
+// STP helpers for datapath. Default to allowing when no STP is configured.
+bool stp_port_is_forwarding(const struct iface *bridge, uint16_t iface_id);
+bool stp_port_is_learning(const struct iface *bridge, uint16_t iface_id);
+
 // Check if a multicast packet to dst_mac should be forwarded to iface_id.
-// Returns true if snooping is disabled, MDB has no entry (flood), or
-// iface_id is in the MDB entry's port list.
 bool mcast_should_forward(
 	const struct iface *bridge,
 	const struct rte_ether_addr *dst_mac,

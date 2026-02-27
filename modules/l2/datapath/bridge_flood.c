@@ -85,6 +85,10 @@ static uint16_t bridge_flood_process(
 			if (!(member->flags & GR_IFACE_F_UP))
 				continue; // Skip down interfaces
 
+			// STP: skip ports not in forwarding state.
+			if (bridge->stp != NULL && !stp_port_is_forwarding(br, member->id))
+				continue;
+
 			// Multicast snooping: only forward to subscribed ports
 			if (is_mcast && !mcast_should_forward(br, &eth->dst_addr, member->id))
 				continue;

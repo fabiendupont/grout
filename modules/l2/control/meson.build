@@ -18,6 +18,7 @@ src += files(
 inc += include_directories('.')
 
 tests += [
+  { 'sources': files('l2_hooks_test.c', 'bridge.c'), 'link_args': [] },
   { 'sources': files('mcast_snooping_test.c', 'mcast_snooping.c'), 'link_args': [] },
   { 'sources': files('port_mirror_test.c', 'port_mirror.c'), 'link_args': [] },
   { 'sources': files('qos_test.c', 'qos.c'), 'link_args': [] },
