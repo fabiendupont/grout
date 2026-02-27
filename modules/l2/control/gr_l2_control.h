@@ -53,6 +53,12 @@ bool storm_control_meter_packet(
 	uint32_t packet_len
 );
 
+// QoS: meter a packet against the per-queue rate limit.
+// Returns true if the packet should be forwarded. Classifies the
+// packet into a priority queue based on 802.1p CoS or DSCP and
+// checks the queue's trTCM meter.
+bool qos_meter_packet(uint16_t iface_id, uint16_t lcore_id, uint8_t priority, uint32_t packet_len);
+
 // Port mirroring: check if packets on iface_id should be mirrored.
 // Returns the destination port ID or GR_IFACE_ID_UNDEF if no mirroring.
 uint16_t port_mirror_get_dest(uint16_t bridge_id, uint16_t iface_id, uint8_t direction);

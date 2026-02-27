@@ -112,6 +112,18 @@ next:
 		if (edge == FLOOD && (br->flags & GR_BRIDGE_F_NO_FLOOD))
 			edge = FLOOD_DISABLED;
 
+		// QoS: meter packet against per-queue rate limit
+		if (edge == OUTPUT || edge == FLOOD || edge == INPUT) {
+			uint8_t prio = 0;
+			if (eth->ether_type == RTE_BE16(RTE_ETHER_TYPE_VLAN)) {
+				const struct rte_vlan_hdr *vlan = (const struct
+								   rte_vlan_hdr *)(eth + 1);
+				prio = (rte_be_to_cpu_16(vlan->vlan_tci) >> 13) & 0x7;
+			}
+			if (!qos_meter_packet(d->iface->id, lcore_id, prio, rte_pktmbuf_pkt_len(m)))
+				edge = STORM_DROP; // reuse storm drop for QoS drops
+		}
+
 		// Storm control: meter BUM traffic on the ingress port
 		if (edge == FLOOD) {
 			uint8_t sc_type;

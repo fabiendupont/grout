@@ -8,6 +8,7 @@ cli_src += files(
     'l2_stats.c',
     'mcast_snooping.c',
     'port_mirror.c',
+    'qos.c',
     'storm_control.c',
     'vxlan.c',
 )
