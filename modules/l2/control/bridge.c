@@ -15,6 +15,12 @@ struct mcast_snooping *bridge_get_mcast_snooping(const struct iface *bridge) {
 	return iface_info_bridge(bridge)->mcast_snoop;
 }
 
+struct lldp_config *bridge_get_lldp_config(const struct iface *bridge) {
+	if (bridge == NULL || bridge->type != GR_IFACE_TYPE_BRIDGE)
+		return NULL;
+	return iface_info_bridge(bridge)->lldp;
+}
+
 static int bridge_reconfig(
 	struct iface *iface,
 	uint64_t set_attrs,

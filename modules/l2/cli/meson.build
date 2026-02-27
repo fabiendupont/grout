@@ -6,6 +6,7 @@ cli_src += files(
     'flood.c',
     'fdb.c',
     'l2_stats.c',
+    'lldp.c',
     'mcast_snooping.c',
     'port_mirror.c',
     'qos.c',

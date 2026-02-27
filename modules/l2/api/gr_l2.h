@@ -495,3 +495,48 @@ struct gr_l2_qos_stats {
 	uint64_t tx[8];
 	uint64_t port_dropped;
 };
+
+// LLDP (Link Layer Discovery Protocol) //////////////////////////////////////
+
+#define GR_L2_LLDP_CONFIG_SET REQUEST_TYPE(GR_L2_MODULE, 0x00B0)
+
+struct gr_l2_lldp_config_req {
+	uint16_t bridge_id;
+	uint8_t enabled;
+	uint32_t tx_interval;
+	uint16_t ttl;
+};
+
+#define GR_L2_LLDP_CONFIG_GET REQUEST_TYPE(GR_L2_MODULE, 0x00B1)
+
+struct gr_l2_lldp_config_status {
+	uint16_t bridge_id;
+	uint8_t enabled;
+	uint32_t tx_interval;
+	uint16_t ttl;
+	uint16_t num_neighbors;
+	uint16_t num_enabled_ifaces;
+};
+
+#define GR_L2_LLDP_NEIGHBORS_LIST REQUEST_TYPE(GR_L2_MODULE, 0x00B4)
+
+struct gr_l2_lldp_neighbor {
+	uint16_t bridge_id;
+	uint16_t iface_id;
+	uint8_t chassis_id_subtype;
+	uint8_t chassis_id_len;
+	uint8_t chassis_id[256];
+	uint8_t port_id_subtype;
+	uint8_t port_id_len;
+	uint8_t port_id[256];
+	uint16_t ttl;
+	uint32_t age;
+	char port_desc[256];
+	char system_name[256];
+	char system_desc[256];
+};
+
+struct gr_l2_lldp_neighbors_list_req {
+	uint16_t bridge_id;
+	uint16_t iface_id;
+};

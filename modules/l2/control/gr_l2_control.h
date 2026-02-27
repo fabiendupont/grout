@@ -37,6 +37,7 @@ static inline struct fdb_stats *fdb_get_stats(uint16_t bridge_id, unsigned lcore
 }
 
 struct mcast_snooping;
+struct lldp_config;
 
 // Storm control traffic types.
 #define STORM_TRAFFIC_BROADCAST 0
@@ -69,9 +70,11 @@ GR_IFACE_INFO(GR_IFACE_TYPE_BRIDGE, iface_info_bridge, {
 
 	struct iface *members[GR_BRIDGE_MAX_MEMBERS];
 	struct mcast_snooping *mcast_snoop;
+	struct lldp_config *lldp;
 });
 
 struct mcast_snooping *bridge_get_mcast_snooping(const struct iface *bridge);
+struct lldp_config *bridge_get_lldp_config(const struct iface *bridge);
 
 // Check if a multicast packet to dst_mac should be forwarded to iface_id.
 // Returns true if snooping is disabled, MDB has no entry (flood), or
