@@ -294,3 +294,55 @@ struct gr_l2_mdb_del_req {
 	struct rte_ether_addr group_mac;
 	uint16_t iface_id;
 };
+
+// Storm control //////////////////////////////////////////////////////////////
+
+#define GR_L2_STORM_CONTROL_SET REQUEST_TYPE(GR_L2_MODULE, 0x0070)
+
+struct gr_l2_storm_control_req {
+	uint16_t iface_id;
+	uint8_t enabled;
+	uint64_t bcast_rate_kbps;
+	uint64_t mcast_rate_kbps;
+	uint64_t unknown_uc_rate_kbps;
+	uint8_t use_pps;
+	uint8_t shutdown_on_violation;
+	uint8_t violation_threshold;
+};
+
+#define GR_L2_STORM_CONTROL_GET REQUEST_TYPE(GR_L2_MODULE, 0x0071)
+
+struct gr_l2_storm_control_get_req {
+	uint16_t iface_id;
+};
+
+struct gr_l2_storm_control_status {
+	uint16_t iface_id;
+	uint8_t enabled;
+	uint64_t bcast_rate_kbps;
+	uint64_t mcast_rate_kbps;
+	uint64_t unknown_uc_rate_kbps;
+	uint8_t use_pps;
+	uint8_t shutdown_on_violation;
+	uint8_t violation_threshold;
+	uint8_t is_shutdown;
+};
+
+#define GR_L2_STORM_CONTROL_REENABLE REQUEST_TYPE(GR_L2_MODULE, 0x0072)
+
+struct gr_l2_storm_control_reenable_req {
+	uint16_t iface_id;
+};
+
+#define GR_L2_STORM_CONTROL_STATS_GET REQUEST_TYPE(GR_L2_MODULE, 0x0073)
+
+struct gr_l2_storm_control_stats {
+	uint16_t iface_id;
+	uint64_t bcast_passed;
+	uint64_t bcast_dropped;
+	uint64_t mcast_passed;
+	uint64_t mcast_dropped;
+	uint64_t unknown_uc_passed;
+	uint64_t unknown_uc_dropped;
+	uint64_t shutdown_events;
+};

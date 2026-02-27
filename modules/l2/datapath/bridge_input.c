@@ -20,6 +20,7 @@ enum edges {
 	HAIRPIN,
 	OUT_IFACE_INVAL,
 	FLOOD_DISABLED,
+	STORM_DROP,
 	EDGE_COUNT
 };
 
@@ -111,6 +112,22 @@ next:
 		if (edge == FLOOD && (br->flags & GR_BRIDGE_F_NO_FLOOD))
 			edge = FLOOD_DISABLED;
 
+		// Storm control: meter BUM traffic on the ingress port
+		if (edge == FLOOD) {
+			uint8_t sc_type;
+			if (rte_is_broadcast_ether_addr(&eth->dst_addr))
+				sc_type = STORM_TRAFFIC_BROADCAST;
+			else if (rte_is_multicast_ether_addr(&eth->dst_addr))
+				sc_type = STORM_TRAFFIC_MULTICAST;
+			else
+				sc_type = STORM_TRAFFIC_UNKNOWN_UC;
+
+			if (!storm_control_meter_packet(
+				    d->iface->id, lcore_id, sc_type, rte_pktmbuf_pkt_len(m)
+			    ))
+				edge = STORM_DROP;
+		}
+
 		rte_node_enqueue_x1(graph, node, edge, m);
 	}
 
@@ -147,6 +164,7 @@ static struct rte_node_register node = {
 		[HAIRPIN] = "bridge_input_hairpin",
 		[OUT_IFACE_INVAL] = "bridge_input_invalid_output",
 		[FLOOD_DISABLED] = "bridge_input_flood_disabled",
+		[STORM_DROP] = "bridge_input_storm_drop",
 	},
 };
 
@@ -163,3 +181,4 @@ GR_DROP_REGISTER(bridge_input_invalid_domain);
 GR_DROP_REGISTER(bridge_input_hairpin);
 GR_DROP_REGISTER(bridge_input_invalid_output);
 GR_DROP_REGISTER(bridge_input_flood_disabled);
+GR_DROP_REGISTER(bridge_input_storm_drop);

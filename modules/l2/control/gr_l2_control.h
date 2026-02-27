@@ -37,6 +37,21 @@ static inline struct fdb_stats *fdb_get_stats(uint16_t bridge_id, unsigned lcore
 
 struct mcast_snooping;
 
+// Storm control traffic types.
+#define STORM_TRAFFIC_BROADCAST 0
+#define STORM_TRAFFIC_MULTICAST 1
+#define STORM_TRAFFIC_UNKNOWN_UC 2
+
+// Storm control: check if a BUM packet should be forwarded.
+// Returns true if the packet passes the rate meter or if storm
+// control is not configured for this interface/traffic type.
+bool storm_control_meter_packet(
+	uint16_t iface_id,
+	uint16_t lcore_id,
+	uint8_t traffic_type,
+	uint32_t packet_len
+);
+
 // Internal bridge info structure.
 GR_IFACE_INFO(GR_IFACE_TYPE_BRIDGE, iface_info_bridge, {
 	BASE(__gr_iface_info_bridge_base);
